@@ -132,7 +132,7 @@ void clear_grid(int grid[GRID_DIM][GRID_DIM]) {
 }
 
 int fill_grid(int grid[GRID_DIM][GRID_DIM], int numbers[], int filled_cells) {
-    int value, row, column;
+    int row, column;
     if (filled_cells == total_cells) return TRUE;
     for (int i = 0; i < total_cells; i++) {
         row = i / 9;
@@ -140,7 +140,7 @@ int fill_grid(int grid[GRID_DIM][GRID_DIM], int numbers[], int filled_cells) {
         if (is_zero(grid, row, column)) {
             shuffle(numbers);
             for (int j = 0; j < 9; j++) {
-                if (try_insert_value(grid, value, row, column)) {
+                if (try_insert_value(grid, numbers[j], row, column)) {
                     if (filled_cells == total_cells) { return TRUE; }
                     if (fill_grid(grid, numbers, filled_cells + 1)) { return TRUE; }
                 }
