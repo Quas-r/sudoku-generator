@@ -16,6 +16,8 @@ int check_square(int grid[GRID_DIM][GRID_DIM], int value, int row, int column);
 int try_insert_value(int grid[GRID_DIM][GRID_DIM], int value, int row, int column);
 void clear_grid(int grid[GRID_DIM][GRID_DIM]);
 int fill_grid(int grid[GRID_DIM][GRID_DIM], int numbers[], int filled_cells);
+int solution_count(int grid[GRID_DIM][GRID_DIM], int numbers[], int filled_cells);
+void remove_numbers(int grid[GRID_DIM][GRID_DIM], int attempts);
 void shuffle(int numbers[]);
 void *thread(void* ptr);
 
@@ -23,7 +25,9 @@ void *thread(void* ptr);
 int line_seperator_length = GRID_DIM + (GRID_DIM / SQR_DIM) + 1;
 int total_cells = GRID_DIM * GRID_DIM;
 long threads_done = FALSE;
+int clues = GRID_DIM * GRID_DIM;
 pthread_mutex_t mutex;
+int count;
 
 
 
@@ -33,27 +37,21 @@ int main(int argc, char *argv[])
 
     int grid[GRID_DIM][GRID_DIM];
     int numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
-    clear_grid(grid);
-    fill_grid(grid, numbers, 0);
+    do {
+        clear_grid(grid);
+    } while (!fill_grid(grid, numbers, 0));
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 5);
+    remove_numbers(grid, 3);
+    remove_numbers(grid, 2);
     display_grid(grid);
 
-    // pthread_t thread1, thread2, thread3, thread4, thread5, thread6, thread7, thread8;
-    // pthread_create(&thread1, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread2, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread3, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread4, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread5, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread6, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread7, NULL, *thread, (void*) threads_done);
-    // pthread_create(&thread8, NULL, *thread, (void*) threads_done);
-    // pthread_join(thread1, NULL);
-    // pthread_join(thread2, NULL);
-    // pthread_join(thread3, NULL);
-    // pthread_join(thread4, NULL);
-    // pthread_join(thread5, NULL);
-    // pthread_join(thread6, NULL);
-    // pthread_join(thread7, NULL);
-    // pthread_join(thread8, NULL);
     return 0;
 }
 
@@ -71,7 +69,8 @@ void display_grid(int grid[GRID_DIM][GRID_DIM]) {
                 putchar('|'); 
                 putchar(' ');
             }
-            putchar(grid[i][j] + '0');
+            if (grid[i][j] == 0) { putchar(' '); }
+            else { putchar(grid[i][j] + '0'); }
             putchar(' ');
         }
         putchar('|');
@@ -149,6 +148,53 @@ int fill_grid(int grid[GRID_DIM][GRID_DIM], int numbers[], int filled_cells) {
     }
     grid[row][column] = 0;
     return FALSE;
+}
+
+int solution_count(int grid[GRID_DIM][GRID_DIM], int numbers[], int filled_cells) {
+    int row, column;
+    if (filled_cells == total_cells) {
+        count++;
+        return TRUE;
+    }
+    for (int i = 0; i < total_cells; i++) {
+        row = i / 9;
+        column = i % 9;
+        if (is_zero(grid, row, column)) {
+            shuffle(numbers);
+            for (int j = 0; j < 9; j++) {
+                if (try_insert_value(grid, numbers[j], row, column)) {
+                    solution_count(grid, numbers, filled_cells + 1);
+                }
+            }
+        }
+    }
+    grid[row][column] = 0;
+    return TRUE;
+}
+
+void remove_numbers(int grid[GRID_DIM][GRID_DIM], int attempts) {
+    int numbers[] = { 1, 2, 3, 4, 5, 6, 7, 8, 9 };
+    while (attempts > 0) {
+        count = 0;
+        int row, column;
+        do {
+            row = rand() % GRID_DIM;
+            column = rand() % GRID_DIM;
+        } while (grid[row][column] == 0);
+        int backup = grid[row][column];
+        grid[row][column] = 0;
+
+        int grid_copy[GRID_DIM][GRID_DIM];
+        for (int i = 0; i < total_cells; i++) {
+            grid_copy[i / GRID_DIM][i % GRID_DIM] = grid[i / GRID_DIM][i % GRID_DIM];
+        }
+        solution_count(grid_copy, numbers, clues - 1);
+        if (count != 1) { grid[row][column] = backup; }
+        else {
+            attempts--; 
+            clues--;
+        }
+    }
 }
 
 void *thread(void* ptr) {
