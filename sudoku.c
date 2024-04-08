@@ -40,17 +40,10 @@ int main(int argc, char *argv[])
     do {
         clear_grid(grid);
     } while (!fill_grid(grid, numbers, 0));
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 5);
-    remove_numbers(grid, 3);
-    remove_numbers(grid, 2);
     display_grid(grid);
+    remove_numbers(grid, 64);
+    display_grid(grid);
+    printf("\nClues: %d", clues);
 
     return 0;
 }
